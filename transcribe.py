@@ -1,4 +1,6 @@
 import whisper
+import torch
+import warnings
 import os
 from pydub import AudioSegment
 
@@ -18,6 +20,8 @@ def split_audio(file_path, chunk_length_ms=60000):
         chunks.append(chunk_path)
     return chunks
 
+warnings.filterwarnings("ignore", message="FP16 is not supported on CPU")
+
 def transcribe_audio(file_path):
     if not os.path.exists(file_path):
         print(f"Error: File {file_path} does not exist.")
@@ -29,21 +33,36 @@ def transcribe_audio(file_path):
             file_path = convert_to_wav(file_path)
         
         # Load the Whisper model
-        model = whisper.load_model("base")
-        
-        # Split and transcribe chunks
+        model = whisper.load_model("base" , device="cpu")
+
+    
+         # Split and transcribe chunks
         chunks = split_audio(file_path)
+        total_chunks = len(chunks)  # Total number of chunks
         full_transcription = ""
+
         
-        for chunk in chunks:
+        print(f"Starting transcription... {total_chunks} chunks to process.\n")
+
+        for i, chunk in enumerate(chunks):
             result = model.transcribe(chunk)
             full_transcription += result["text"] + "\n"
+
+            # Print progress
+            print(f"Transcribed chunk {i + 1} of {total_chunks}")
         
         # Print the transcription
         print("Transcription: ", full_transcription)
         
         # Save the transcription to a file
         save_transcription(full_transcription, file_path.rsplit('.', 1)[0] + '.txt')
+
+        #delete chunk audio files after transcription
+        for chunk in chunks:
+            try:
+                os.remove(chunk)
+            except Exception as e:
+                print(f"Warning: Could not delete {chunk}: {e}")
         
         return full_transcription
     except Exception as e:
