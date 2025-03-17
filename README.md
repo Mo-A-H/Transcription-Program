@@ -45,7 +45,7 @@ Example Process
 	2.	Navigate to your project directory:
       cd /Users/abraar/Documents/transcribe
 
-  3.	Activate the virtual environment (if not already activated):
+ 	3.	Activate the virtual environment (if not already activated):
       cd /Users/xxx/Documents/transcribe
 	4.	Run the script with the path to the new audio file:
       python transcribe.py /Users/abraar/Documents/New_Audio/new_audio.m4a
